@@ -8,19 +8,19 @@ int main()
     int burst[] = {5, 3, 8};           // Burst times
     int completion[3], turnaround[3], waiting[3];
 
-    int time = 0; // CPU ka current time
+    int time = 0; // CPU  current time
 
     // FCFS Scheduling
     for (int i = 0; i < n; i++)
     {
         if (time < arrival[i])
-            time = arrival[i]; // Agar CPU idle hai, to arrival time tak wait karega
+            time = arrival[i];
 
-        completion[i] = time + burst[i];                  // Completion time niklna
+        completion[i] = time + burst[i];                  // Completion time 
         turnaround[i] = completion[i] - arrival[i];       // Turnaround time
         waiting[i] = turnaround[i] - burst[i];            // Waiting time
 
-        time = completion[i]; // Next process ke liye update karo
+        time = completion[i]; 
     }
 
     // Output Table
