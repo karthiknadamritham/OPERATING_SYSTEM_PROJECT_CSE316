@@ -1,35 +1,29 @@
 #include <iostream>
+#include <fstream>
 using namespace std;
 
-int main()
-{
-    int n = 3;                         // Number of processes
-    int arrival[] = {0, 1, 2};         // Arrival times
-    int burst[] = {5, 3, 8};           // Burst times
-    int completion[3], turnaround[3], waiting[3];
+struct Process {
+    string id;
+    int arrival;
+    int burst;
+    int start;
+    int end;
+};
 
-    int time = 0; // CPU  current time
+int main() {
+    ofstream fout("schedule.csv");
+    fout << "Process,Start,End\n";
 
-    // FCFS Scheduling
-    for (int i = 0; i < n; i++)
-    {
-        if (time < arrival[i])
-            time = arrival[i];
+    Process p[3] = {
+        {"P1", 0, 5, 0, 5},
+        {"P2", 1, 3, 5, 8},
+        {"P3", 2, 4, 8, 12}
+    };
 
-        completion[i] = time + burst[i];                  // Completion time 
-        turnaround[i] = completion[i] - arrival[i];       // Turnaround time
-        waiting[i] = turnaround[i] - burst[i];            // Waiting time
-
-        time = completion[i]; 
+    for (int i = 0; i < 3; ++i) {
+        fout << p[i].id << "," << p[i].start << "," << p[i].end << "\n";
     }
 
-    // Output Table
-    cout << "PID\tArrival\tBurst\tCompletion\tTurnaround\tWaiting\n";
-    for (int i = 0; i < n; i++)
-    {
-        cout << (i + 1) << "\t" << arrival[i] << "\t" << burst[i] << "\t"
-             << completion[i] << "\t\t" << turnaround[i] << "\t\t" << waiting[i] << endl;
-    }
-
+    fout.close();
     return 0;
 }
