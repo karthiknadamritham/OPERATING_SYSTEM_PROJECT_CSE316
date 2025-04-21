@@ -1,59 +1,45 @@
 #include <iostream>
-#include <algorithm>
+#include <fstream>
+#include <vector>
 using namespace std;
 
 struct Process {
-    int id, burstTime, priority, waitingTime, turnaroundTime;
+    string id;
+    int arrival, burst, priority, start, end;
+    bool done;
 };
 
-// Function to sort by priority (ascending order)
-bool compare(Process a, Process b) {
-    return a.priority < b.priority;
-}
-
 int main() {
-    int n;
-    cout << "Enter number of processes: ";
-    cin >> n;
+    vector<Process> p = {
+        {"P1", 0, 4, 2},
+        {"P2", 1, 3, 1},
+        {"P3", 2, 1, 3}
+    };
+    int n = p.size(), time = 0, done = 0;
+    ofstream fout("schedule.csv");
+    fout << "Process,Start,End\n";
 
-    Process p[n];
+    for (int i = 0; i < n; ++i) p[i].done = false;
 
-    cout << "Enter Burst Time and Priority for each process:\n";
-    for (int i = 0; i < n; i++) {
-        p[i].id = i + 1;
-        cout << "P" << p[i].id << " Burst Time: ";
-        cin >> p[i].burstTime;
-        cout << "P" << p[i].id << " Priority: ";
-        cin >> p[i].priority;
+    while (done < n) {
+        int idx = -1, high = 1e9;
+        for (int i = 0; i < n; ++i) {
+            if (!p[i].done && p[i].arrival <= time && p[i].priority < high) {
+                high = p[i].priority;
+                idx = i;
+            }
+        }
+
+        if (idx == -1) { time++; continue; }
+
+        p[idx].start = time;
+        p[idx].end = time + p[idx].burst;
+        time = p[idx].end;
+        p[idx].done = true;
+        done++;
+        fout << p[idx].id << "," << p[idx].start << "," << p[idx].end << "\n";
     }
 
-    // Step 1: Sort by priority
-    sort(p, p + n, compare);
-
-    // Step 2: Calculate waiting time
-    p[0].waitingTime = 0;
-    for (int i = 1; i < n; i++) {
-        p[i].waitingTime = p[i - 1].waitingTime + p[i - 1].burstTime;
-    }
-
-    // Step 3: Calculate turnaround time
-    float totalWaitingTime = 0, totalTurnaroundTime = 0;
-    for (int i = 0; i < n; i++) {
-        p[i].turnaroundTime = p[i].waitingTime + p[i].burstTime;
-        totalWaitingTime += p[i].waitingTime;
-        totalTurnaroundTime += p[i].turnaroundTime;
-    }
-
-    // Step 4: Display results
-    cout << "\nProcess\tBurst Time\tPriority\tWaiting Time\tTurnaround Time\n";
-    for (int i = 0; i < n; i++) {
-        cout << "P" << p[i].id << "\t" << p[i].burstTime << "\t\t"
-             << p[i].priority << "\t\t" << p[i].waitingTime << "\t\t"
-             << p[i].turnaroundTime << endl;
-    }
-
-    cout << "\nAverage Waiting Time: " << totalWaitingTime / n;
-    cout << "\nAverage Turnaround Time: " << totalTurnaroundTime / n << endl;
-
+    fout.close();
     return 0;
 }
