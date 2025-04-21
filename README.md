@@ -49,23 +49,12 @@ To install required Python packages:
 
 ---------------------------------------------------------------------------------------
 
-Project Structure
-├── fcfs.cpp
-├── sjf.cpp
-├── priority.cpp
-├── pp.cpp
-├── rr.cpp
-├── plot_schedule.py
-├── schedule.csv         ← Output after algorithm run
-├── run_all.bat          ← One-click launcher
-└── README.md
-
----------------------------------------------------------------------------------------
-
 **How to Run**
 Download or clone the repository:
+
 -> git clone https://github.com/karthiknadamritham/OPERATING_SYSTEM_PROJECT_CSE316.git
-cd OPERATING_SYSTEM_PROJECT_CSE316
+
+-> cd OPERATING_SYSTEM_PROJECT_CSE316
 
 -> Double-click run_all.bat
 
