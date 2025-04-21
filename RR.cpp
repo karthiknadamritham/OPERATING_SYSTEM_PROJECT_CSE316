@@ -1,58 +1,62 @@
 #include <iostream>
+#include <fstream>
+#include <queue>
+#include <vector>
 using namespace std;
 
 struct Process {
-    int id, burstTime, remainingTime, waitingTime, turnaroundTime;
+    string id;
+    int arrival, burst, remaining;
+    int last_exec = -1;
 };
 
 int main() {
-    int n, timeQuantum;
-    cout << "Enter number of processes: ";
-    cin >> n;
-    cout << "Enter time quantum: ";
-    cin >> timeQuantum;
+    int quantum = 2;
+    vector<Process> p = {
+        {"P1", 0, 5, 5},
+        {"P2", 1, 3, 3},
+        {"P3", 2, 4, 4}
+    };
 
-    Process p[n];
-    for (int i = 0; i < n; i++) {
-        p[i].id = i + 1;
-        cout << "Enter Burst Time for P" << p[i].id << ": ";
-        cin >> p[i].burstTime;
-        p[i].remainingTime = p[i].burstTime;
-        p[i].waitingTime = 0;
-    }
+    int time = 0, n = p.size(), completed = 0;
+    queue<int> q;
+    vector<bool> in_queue(n, false);
 
-    int time = 0, completed = 0;
+    ofstream fout("schedule.csv");
+    fout << "Process,Start,End\n";
+
     while (completed < n) {
-        bool done = true;
-        for (int i = 0; i < n; i++) {
-            if (p[i].remainingTime > 0) {
-                done = false;
-                if (p[i].remainingTime > timeQuantum) {
-                    time += timeQuantum;
-                    p[i].remainingTime -= timeQuantum;
-                } else {
-                    time += p[i].remainingTime;
-                    p[i].waitingTime = time - p[i].burstTime;
-                    p[i].turnaroundTime = time;
-                    p[i].remainingTime = 0;
-                    completed++;
-                }
+        for (int i = 0; i < n; ++i)
+            if (p[i].arrival <= time && !in_queue[i] && p[i].remaining > 0) {
+                q.push(i);
+                in_queue[i] = true;
             }
+
+        if (q.empty()) {
+            time++;
+            continue;
         }
-        if (done) break;
+
+        int idx = q.front(); q.pop();
+        int slice = min(quantum, p[idx].remaining);
+        fout << p[idx].id << "," << time << "," << time + slice << "\n";
+
+        time += slice;
+        p[idx].remaining -= slice;
+
+        for (int i = 0; i < n; ++i)
+            if (p[i].arrival <= time && !in_queue[i] && p[i].remaining > 0) {
+                q.push(i);
+                in_queue[i] = true;
+            }
+
+        if (p[idx].remaining > 0) {
+            q.push(idx);
+        } else {
+            completed++;
+        }
     }
 
-    float totalWaitingTime = 0, totalTurnaroundTime = 0;
-    cout << "\nProcess\tBurst Time\tWaiting Time\tTurnaround Time\n";
-    for (int i = 0; i < n; i++) {
-        totalWaitingTime += p[i].waitingTime;
-        totalTurnaroundTime += p[i].turnaroundTime;
-        cout << "P" << p[i].id << "\t" << p[i].burstTime << "\t\t"
-             << p[i].waitingTime << "\t\t" << p[i].turnaroundTime << endl;
-    }
-
-    cout << "\nAverage Waiting Time: " << (totalWaitingTime / n);
-    cout << "\nAverage Turnaround Time: " << (totalTurnaroundTime / n) << endl;
-
+    fout.close();
     return 0;
 }
