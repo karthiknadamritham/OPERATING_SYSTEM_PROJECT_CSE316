@@ -1,56 +1,47 @@
-// SJF
-
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <algorithm>
 using namespace std;
 
 struct Process {
-    int id, burstTime, waitingTime, turnaroundTime;
+    string id;
+    int arrival, burst, start, end;
+    bool done;
 };
 
-bool compare(Process a, Process b) {
-    return a.burstTime < b.burstTime; // Sort by burst time (Shortest First)
-}
-
 int main() {
-    int n;
-    cout << "Enter number of processes: ";
-    cin >> n;
+    vector<Process> p = {
+        {"P1", 0, 7},
+        {"P2", 2, 4},
+        {"P3", 4, 1},
+        {"P4", 5, 4}
+    };
+    int n = p.size(), time = 0, done = 0;
+    ofstream fout("schedule.csv");
+    fout << "Process,Start,End\n";
 
-    Process p[n];
-    cout << "Enter Burst Time for each process:\n";
-    for (int i = 0; i < n; i++) {
-        p[i].id = i + 1;
-        cout << "P" << p[i].id << ": ";
-        cin >> p[i].burstTime;
+    for (int i = 0; i < n; ++i) p[i].done = false;
+
+    while (done < n) {
+        int idx = -1, minBurst = 1e9;
+        for (int i = 0; i < n; ++i) {
+            if (!p[i].done && p[i].arrival <= time && p[i].burst < minBurst) {
+                minBurst = p[i].burst;
+                idx = i;
+            }
+        }
+
+        if (idx == -1) { time++; continue; }
+
+        p[idx].start = time;
+        p[idx].end = time + p[idx].burst;
+        time = p[idx].end;
+        p[idx].done = true;
+        done++;
+        fout << p[idx].id << "," << p[idx].start << "," << p[idx].end << "\n";
     }
 
-    // Step 1: Sort processes by burst time
-    sort(p, p + n, compare);
-
-    // Step 2: Calculate waiting time
-    p[0].waitingTime = 0;
-    for (int i = 1; i < n; i++) {
-        p[i].waitingTime = p[i - 1].waitingTime + p[i - 1].burstTime;
-    }
-
-    // Step 3: Calculate turnaround time
-    float totalWaitingTime = 0, totalTurnaroundTime = 0;
-    for (int i = 0; i < n; i++) {
-        p[i].turnaroundTime = p[i].waitingTime + p[i].burstTime;
-        totalWaitingTime += p[i].waitingTime;
-        totalTurnaroundTime += p[i].turnaroundTime;
-    }
-
-    // Step 4: Display results
-    cout << "\nProcess\tBurst Time\tWaiting Time\tTurnaround Time\n";
-    for (int i = 0; i < n; i++) {
-        cout << "P" << p[i].id << "\t" << p[i].burstTime << "\t\t"
-             << p[i].waitingTime << "\t\t" << p[i].turnaroundTime << endl;
-    }
-
-    cout << "\nAverage Waiting Time: " << totalWaitingTime / n;
-    cout << "\nAverage Turnaround Time: " << totalTurnaroundTime / n << endl;
-
+    fout.close();
     return 0;
 }
